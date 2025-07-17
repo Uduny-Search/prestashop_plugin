@@ -50,16 +50,16 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
         $fields_form = array([
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Configuration'),
+                    'title' => $this->trans('Configuration', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                     'icon' => 'icon-cog',
                 ),
-                // 'description' => $this->l('Testing URL:') . '<br><a href="'. $url .'" target="_blank">'. $url .'</a>',
+                // 'description' => $this->trans('Testing URL:', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig') . '<br><a href="'. $url .'" target="_blank">'. $url .'</a>',
                 'input' => array(
                     array(
                         'type' => 'select',
-                        'label' => $this->l('Image Size'),
+                        'label' => $this->trans('Image Size', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'IMG_SIZE',
-                        'desc' => $this->l('Export image size'),
+                        'desc' => $this->trans('Export image size', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'options' => array(
                             'query' => ImageType::getImagesTypes(),
                             'id' => 'id_image_type',
@@ -69,23 +69,23 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Script URL'),
+                        'label' => $this->trans('Script URL', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'SCRIPT_SRC',
-                        'desc' => $this->l('Embedded JS Script.'),
+                        'desc' => $this->trans('Embedded JS Script.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'col' => 7,
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Production Mode'),
+                        'label' => $this->trans('Production Mode', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'IS_PRODUCTION',
                         'is_bool' => true,
                         'values' => $this->returnYesNo(),
                         'default' => 1,
-                        'desc' =>  $this->l('Testing or Production mode.'),
+                        'desc' =>  $this->trans('Testing or Production mode.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                     ),
                     array(
                         'type' => 'html',
-                        'label' => $this->l('Testing Url'),
+                        'label' => $this->trans('Testing Url', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'URL',
                         'html_content' => '<div style="display:flex;">
                                 <style>#si_config_form .form-wrapper:has(input#IS_PRODUCTION_on[name="IS_PRODUCTION"]:checked) > .form-group:last-child {display:none;}</style>
@@ -97,7 +97,7 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                     ),
                 ),
                 'submit' => array(
-                    'title' => $this->l('Save'),
+                    'title' => $this->trans('Save', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                 ),
             ),
         ]);
@@ -126,9 +126,9 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             // call server instance to verify
             $result = $this->module->updateConfig($config);
             if ($result) {
-                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->l('Search Config Saved!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->trans('Search Config Saved!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'))));
             } else {
-                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->l('There is something wrong when saving Search Configuration!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->trans('There is something wrong when saving Search Configuration!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'))));
             }
 
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminSearchIntegratorConfig'));
@@ -146,12 +146,12 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             array(
                 'id' => 'active_on',
                 'value' => 1,
-                'label' => $this->l('Enabled')
+                'label' => $this->trans('Enabled', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig')
             ),
             array(
                 'id' => 'active_off',
                 'value' => 0,
-                'label' => $this->l('Disabled')
+                'label' => $this->trans('Disabled', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig')
             )
         );
     }

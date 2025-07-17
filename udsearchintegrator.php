@@ -40,10 +40,10 @@ class Udsearchintegrator extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('UD Search Integrator');
-        $this->description = $this->l('Exporting all of your product for search and SEO optimization');
+        $this->displayName = Translate::getModuleTranslation($this, 'UD Search Integrator', $this->name);
+        $this->description = Translate::getModuleTranslation($this, 'Exporting all of your product for search and SEO optimization', $this->name);
 
-        $this->confirmUninstall = $this->l('Please do not regret your decision!');
+        $this->confirmUninstall = Translate::getModuleTranslation($this, 'Please do not regret your decision!', $this->name);
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->loadModuleClasses();
@@ -111,13 +111,13 @@ class Udsearchintegrator extends Module
             'left' => array(
                 array(
                     'href' => $this->context->link->getAdminLink('AdminSearchIntegratorDashboard'),
-                    'desc' => $this->l('Dashboard', null, null, false),
+                    'desc' => Translate::getModuleTranslation($this, 'Dashboard', $this->name),
                     'icon' => 'process-icon-home icon-home',
                     'disabled' => ($controller_name == 'si_dashboard') ? true : false,
                 ),
                 array(
                     'href' => $this->context->link->getAdminLink('AdminSearchIntegratorConfig'),
-                    'desc' => $this->l('Configuration', null, null, false),
+                    'desc' => Translate::getModuleTranslation($this, 'Configuration', $this->name),
                     'icon' => 'process-icon-cog icon-cog',
                     'disabled' => ($controller_name == 'si_config') ? true : false,
                 ),

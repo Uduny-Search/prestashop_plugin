@@ -41,9 +41,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
 
         if(Tools::isSubmit('delete'.$this->name)){
             if(DB::getInstance()->delete('udsearch_filters', 'id_udsearch_filters = '. Tools::getValue('id_udsearch_filters', 0))){
-                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->l('Search Filters Deleted!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->trans('Search Filters Deleted!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             } else {
-                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->l('There is something wrong when deleting Search Filters!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->trans('There is something wrong when deleting Search Filters!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             }
             
             return Tools::redirectAdmin($this->context->link->getAdminLink('AdminSearchIntegratorDashboard'));
@@ -62,7 +62,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
         $custom_link = array(
             array(
                 'href' => self::$currentIndex . '&add' . $this->name . '&token=' . $this->token,
-                'desc' => $this->module->l('New Filter', $this->className),
+                'desc' => $this->trans('New Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'icon' => 'process-icon-plus',
                 'disabled' => false,
             ),
@@ -89,7 +89,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
 
         $helper = new HelperList();
         $helper->identifier = 'id_udsearch_filters';
-        $helper->title = $this->module->l('Search Integrator Filters', $this->className);
+        $helper->title = $this->trans('Search Integrator Filters', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard');
         $helper->toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->name . '&token=' . $this->token,
             'desc' => $this->trans('New', [], 'Admin.Actions'),
@@ -124,44 +124,44 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
 
         $fields_list = array(
             'id_udsearch_filters' => array(
-                'title' => $this->module->l('ID', $this->className),
+                'title' => $this->trans('ID', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'class' => 'fixed-width-xs',
                 'align' => 'center',
                 'search' => false,
                 'remove_onclick' => true,
             ),
             'name' => array(
-                'title' => $this->module->l('Name', $this->className),
+                'title' => $this->trans('Name', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'class' => 'fixed-width-lg',
                 'search' => false,
                 'remove_onclick' => true,
             ),
             'filter_active' => array(
-                'title' => $this->module->l('Active Filter', $this->className),
+                'title' => $this->trans('Active Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'align' => 'center',
                 'callback' => 'renderActiveFilter',
                 'class' => 'fixed-width-md',
             ),
             'filter_stock' => array(
-                'title' => $this->module->l('Stock Filter', $this->className),
+                'title' => $this->trans('Stock Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'align' => 'center',
                 'callback' => 'renderStockFilter',
                 'class' => 'fixed-width-md',
             ),
             'filter_brand' => array(
-                'title' => $this->module->l('Brand Filter', $this->className),
+                'title' => $this->trans('Brand Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'callback' => 'renderBrandFilter',
                 'search' => false,
                 'class' => 'fixed-width-lg',
             ),
             'filter_category' => array(
-                'title' => $this->module->l('Category Filter', $this->className),
+                'title' => $this->trans('Category Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'class' => 'fixed-width-lg',
                 'search' => false,
                 'callback' => 'renderCategoryFilter',
             ),
             'endpoint_url' => array(
-                'title' => $this->module->l('Endpoint', $this->className),
+                'title' => $this->trans('Endpoint', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'class' => 'fixed-width-md',
                 'search' => false,
                 'remove_onclick' => true,
@@ -179,10 +179,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
         $fields_form = array([
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Configure Search Filters'),
+                    'title' => $this->trans('Configure Search Filters', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                     'icon' => 'icon-cog',
                 ),
-                // 'description' => $this->l('Cron List:') . '<br>' . $crons,
                 'input' => array(
                     array(
                         'type' => 'hidden',
@@ -190,22 +189,22 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Endpoint Slug'),
+                        'label' => $this->trans('Endpoint Slug', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'SLUG',
-                        'desc' => $this->l('Endpoint for running this filter'),
+                        'desc' => $this->trans('Endpoint for running this filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'required' => true,
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Name'),
+                        'label' => $this->trans('Name', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'NAME',
-                        'desc' => $this->l('Filter name for backoffice'),
+                        'desc' => $this->trans('Filter name for backoffice', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                     ),
                     array(
                         'type' => 'select',
-                        'label' => $this->l('Product Status'),
+                        'label' => $this->trans('Product Status', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'FILTER_ACTIVE',
-                        'desc' =>  $this->l('Filter by product status.'),
+                        'desc' =>  $this->trans('Filter by product status.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'options' => array(
                             'query' => array([
                                 'key' => SIGenerator::PRODUCT_ALL,
@@ -224,9 +223,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                     ),
                     array(
                         'type' => 'select',
-                        'label' => $this->l('Product Stock Availability'),
+                        'label' => $this->trans('Product Stock Availability', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'FILTER_STOCK',
-                        'desc' =>  $this->l('Filter by product stock.'),
+                        'desc' =>  $this->trans('Filter by product stock.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'options' => array(
                             'query' => array([
                                 'key' => SIGenerator::PRODUCT_ON_STOCK_AVAILABLE,
@@ -245,9 +244,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                     ),
                     array(
                         'type' => 'select',
-                        'label' => $this->l('Brand'),
+                        'label' => $this->trans('Brand', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'FILTER_BRAND[]',
-                        'desc' => $this->l('Filter by brand.'),
+                        'desc' => $this->trans('Filter by brand.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'options' => array(
                             'query' => Manufacturer::getManufacturers(),
                             'id' => 'id_manufacturer',
@@ -258,15 +257,15 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                     ),
                     array(
                         'type' => 'categories_select',
-                        'label' => $this->l('Category'),
+                        'label' => $this->trans('Category', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'FILTER_CATEGORY',
                         'category_tree' => self::renderTargetTree(!empty($config['filter_category']) ? ((is_array($config['filter_category'])) ? $config['filter_category'] : json_decode($config['filter_category'], true)) : array()),
-                        'desc' => $this->l('Filter by category.'),
+                        'desc' => $this->trans('Filter by category.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'col' => 8,
                     ),
                 ),
                 'submit' => array(
-                    'title' => $this->l('Save'),
+                    'title' => $this->trans('Save', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 ),
             ),
         ]);
@@ -307,9 +306,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
             }
             
             if ($result) {
-                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->l('Search Filters Saved!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->trans('Search Filters Saved!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             } else {
-                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->l('There is something wrong when saving Search Filters!'))));
+                $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->trans('There is something wrong when saving Search Filters!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             }
 
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminSearchIntegratorDashboard'));
@@ -419,12 +418,12 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
             array(
                 'id' => 'active_on',
                 'value' => 1,
-                'label' => $this->l('Enabled')
+                'label' => $this->trans('Enabled', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard')
             ),
             array(
                 'id' => 'active_off',
                 'value' => 0,
-                'label' => $this->l('Disabled')
+                'label' => $this->trans('Disabled', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard')
             )
         );
     }

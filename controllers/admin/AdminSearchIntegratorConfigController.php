@@ -56,6 +56,21 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                 // 'description' => $this->trans('Testing URL:', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig') . '<br><a href="'. $url .'" target="_blank">'. $url .'</a>',
                 'input' => array(
                     array(
+                        'type' => 'text',
+                        'label' => $this->trans('Master Token', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'MASTER_TOKEN',
+                        'desc' => $this->trans('Token to debug and bypass whitelist', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 2,
+                        'disabled' => true,
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->trans('Server Whitelist', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'SERVER_WHITELIST',
+                        'desc' => $this->trans('List of ip address separated by comma, that can call this module\'s api, leaving empty will make it public', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 7,
+                    ),
+                    array(
                         'type' => 'select',
                         'label' => $this->trans('Image Size', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'IMG_SIZE',
@@ -108,6 +123,8 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             'IS_PRODUCTION' => $config['IS_PRODUCTION'] ?? 0,
             'SCRIPT_SRC' => $config['SCRIPT_SRC'] ?? '',
             'IMG_SIZE' => $config['IMG_SIZE'] ?? 0,
+            'SERVER_WHITELIST' => $config['SERVER_WHITELIST'] ?? '',
+            'MASTER_TOKEN' => $config['MASTER_TOKEN'] ?? '',
             'URL' => '',
         );
 
@@ -117,10 +134,15 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
     public function postProcess()
     {
         if(Tools::isSubmit('submitAdd' . $this->name)){
+            $ips = explode(',', Tools::getValue('SERVER_WHITELIST', ''));
+            foreach($ips as $key => $ip){
+                if(empty($ip) || (!preg_match('/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/', (string) $ip) && !preg_match('/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/', (string) $ip))) unset($ips[$key]);
+            }
             $config = array(
                 'SCRIPT_SRC' => Tools::getValue('SCRIPT_SRC', ''),
                 'IS_PRODUCTION' => Tools::getValue('IS_PRODUCTION', 0),
                 'IMG_SIZE' => Tools::getValue('IMG_SIZE', 0),
+                'SERVER_WHITELIST' => implode(',', $ips),
             );
 
             // call server instance to verify

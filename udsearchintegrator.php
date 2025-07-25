@@ -40,10 +40,10 @@ class Udsearchintegrator extends Module
 
         parent::__construct();
 
-        $this->displayName = Translate::getModuleTranslation($this, 'UD Search Integrator', $this->name);
-        $this->description = Translate::getModuleTranslation($this, 'Exporting all of your product for search and SEO optimization', $this->name);
+        $this->displayName = $this->trans('UD Search Integrator', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
+        $this->description = $this->trans('Exporting all of your product for search and SEO optimization', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
 
-        $this->confirmUninstall = Translate::getModuleTranslation($this, 'Please do not regret your decision!', $this->name);
+        $this->confirmUninstall = $this->trans('Please do not regret your decision!', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->loadModuleClasses();
@@ -88,6 +88,8 @@ class Udsearchintegrator extends Module
             'SCRIPT_SRC' => '',
             'IS_PRODUCTION' => 0,
             'IMG_SIZE' => 1,
+            'SERVER_WHITELIST' => '',
+            'MASTER_TOKEN' => '',
         );
 
         return json_encode($array);
@@ -111,13 +113,13 @@ class Udsearchintegrator extends Module
             'left' => array(
                 array(
                     'href' => $this->context->link->getAdminLink('AdminSearchIntegratorDashboard'),
-                    'desc' => Translate::getModuleTranslation($this, 'Dashboard', $this->name),
+                    'desc' => $this->trans('Dashboard', [], 'Modules.Udsearchintegrator.Udsearchintegrator'),
                     'icon' => 'process-icon-home icon-home',
                     'disabled' => ($controller_name == 'si_dashboard') ? true : false,
                 ),
                 array(
                     'href' => $this->context->link->getAdminLink('AdminSearchIntegratorConfig'),
-                    'desc' => Translate::getModuleTranslation($this, 'Configuration', $this->name),
+                    'desc' => $this->trans('Configuration', [], 'Modules.Udsearchintegrator.Udsearchintegrator'),
                     'icon' => 'process-icon-cog icon-cog',
                     'disabled' => ($controller_name == 'si_config') ? true : false,
                 ),
@@ -134,7 +136,11 @@ class Udsearchintegrator extends Module
             'SCRIPT_SRC' => (isset($config['SCRIPT_SRC']) ? $config['SCRIPT_SRC'] : $current['SCRIPT_SRC']),
             'IS_PRODUCTION' => (isset($config['IS_PRODUCTION']) ? $config['IS_PRODUCTION'] : $current['IS_PRODUCTION']),
             'IMG_SIZE' => (isset($config['IMG_SIZE']) ? $config['IMG_SIZE'] : $current['IMG_SIZE']),
+            'SERVER_WHITELIST' => (isset($config['SERVER_WHITELIST']) ? $config['SERVER_WHITELIST'] : $current['SERVER_WHITELIST']),
+            'MASTER_TOKEN' => (isset($config['MASTER_TOKEN']) ? $config['MASTER_TOKEN'] : ($current['MASTER_TOKEN'] ?? '')),
         );
+
+        if(empty($updatedConfig['MASTER_TOKEN'])) $updatedConfig['MASTER_TOKEN'] = Tools::passwdGen(16);
 
         return Configuration::updateValue('UDSEARCHINTEGRATOR', json_encode($updatedConfig));
     }

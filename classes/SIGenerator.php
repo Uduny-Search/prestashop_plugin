@@ -160,11 +160,17 @@ class SIGenerator
                 );
             }
 
+            $img_size = '';
+            $si_config = Udsearchintegrator::getConfig();
+            foreach(ImageType::getImagesTypes() as $type){
+                if($si_config['IMG_SIZE'] == $type['id_image_type']) $img_size = $type['name'];
+            }
+          
             $arr = array(
                 'id' => $product->id,
                 'name' => $product->name,
                 'url' => $product->getLink(),
-                'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($cover['id_image'] ?? 0), ImageType::getImageTypeById($this->config['IMG_SIZE'])),
+                'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($cover['id_image'] ?? 0), $img_size),
                 'description' => $product->description,
                 'date_created' => $product->date_add,
                 'price' => Product::getPriceStatic($product->id, true, null, 2, null, false, false),
@@ -174,6 +180,7 @@ class SIGenerator
                 'attributes' => $combinations,
                 'variants' => $variants,
             );
+            if($arr['price'] == $arr['sale_price']) $arr['sale_price'] = '';
             $json[] = $arr;
         }
 

@@ -111,6 +111,12 @@ class SIGenerator
 
     public function getJson()
     {
+        $img_size = '';
+        $si_config = Udsearchintegrator::getConfig();
+        foreach(ImageType::getImagesTypes() as $type){
+            if($si_config['IMG_SIZE'] == $type['id_image_type']) $img_size = $type['name'];
+        }
+
         $id_lang = $this->context->language->id ?? Configuration::get('PS_LANG_DEFAULT');
         $json = array();
         foreach($this->products as $product){
@@ -150,20 +156,22 @@ class SIGenerator
                 $attr_combinations = array();
                 foreach(Product::getAttributesParams($product->id, $pa['id_product_attribute']) as $attr_combination){
                     $attr_combinations[] = array(
-                        'group' => $attr_combination['id_attribute_group'],
-                        'value' => $attr_combination['id_attribute'],
+                        'id_group' => $attr_combination['id_attribute_group'],
+                        'id_value' => $attr_combination['id_attribute'],
+                        'group' => $attr_combination['group'],
+                        'value' => $attr_combination['name'],
                     );
                 }
+                $images = Image::getImages($id_lang, $product->id, $pa['id_product_attribute']);
                 $variants[] = array(
-                    'id_variant' => $pa['id_product_attribute'],
+                    'variant_id' => $pa['id_product_attribute'],
+                    'name' => $product->name,
+                    'price' => Product::getPriceStatic($product->id, true, $pa['id_product_attribute'], 2, null, false, false),
+                    'sale' => Product::getPriceStatic($product->id, true, $pa['id_product_attribute'], 2),
+                    'quantity' => StockAvailable::getQuantityAvailableByProduct($product->id, $pa['id_product_attribute']),
+                    'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($images[0]['id_image'] ?? ($cover['id_image'] ?? 0)), $img_size),
                     'combinations' => $attr_combinations,
                 );
-            }
-
-            $img_size = '';
-            $si_config = Udsearchintegrator::getConfig();
-            foreach(ImageType::getImagesTypes() as $type){
-                if($si_config['IMG_SIZE'] == $type['id_image_type']) $img_size = $type['name'];
             }
           
             $arr = array(

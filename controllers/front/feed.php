@@ -30,6 +30,10 @@ class UdsearchintegratorFeedModuleFrontController extends ModuleFrontController 
 
     public function postProcess()
     {
+        $config = Udsearchintegrator::getConfig();
+        $whitelisted = !empty($config['SERVER_WHITELIST']) ? explode(',', $config['SERVER_WHITELIST']) : array();
+        if(!empty($whitelisted) && ((!Tools::isSubmit('token') || Tools::getValue('token') != $config['MASTER_TOKEN']) && !in_array($this->getVisitorIP(), $whitelisted))) exit;
+
         $sql = 'SELECT id_udsearch_filters 
                 FROM `'._DB_PREFIX_.'udsearch_filters` 
                 WHERE slug = "'.Tools::getValue('link_rewrite').'"';
@@ -49,4 +53,16 @@ class UdsearchintegratorFeedModuleFrontController extends ModuleFrontController 
         header('Content-Type: application/json');
         echo exit(json_encode($data->getJson()));
     }
+
+    public function getVisitorIP() {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ipList[0]);
+        } else {
+            return $_SERVER['REMOTE_ADDR'];
+        }
+    }
+
 }

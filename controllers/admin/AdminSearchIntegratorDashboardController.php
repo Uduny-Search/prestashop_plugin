@@ -386,8 +386,9 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
 
     public function renderEndpoint($param){
         $btn = array();
-        foreach(Language::getLanguages() as $lang){
-            $url = _PS_BASE_URL_SSL_ . '/' . $lang['iso_code'] . '/' . Udsearchintegrator::MODULE_ROUTE . '/' . $param;
+        $langs = Language::getLanguages();
+        foreach($langs as $lang){
+            $url = _PS_BASE_URL_SSL_ . ((count($langs) > 1) ? '/' . $lang['iso_code'] : '') . '/' . Udsearchintegrator::MODULE_ROUTE . '/' . $param;
             $btn[] = '<a href="javascript:void(0)" class="btn clickCopy" data-url="'.$url.'">Copy '.strtoupper($lang['iso_code']).'</a>';
         }
         return implode('</br>', $btn);

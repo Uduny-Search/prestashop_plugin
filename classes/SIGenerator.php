@@ -163,9 +163,12 @@ class SIGenerator
                     );
                 }
                 $images = Image::getImages($id_lang, $product->id, $pa['id_product_attribute']);
+                $product_variant = new Combination($pa['id_product_attribute']);
                 $variants[] = array(
                     'variant_id' => $pa['id_product_attribute'],
                     'name' => $product->name,
+                    'ean' => $product_variant->ean13,
+                    'reference' => $product_variant->reference,
                     'price' => Product::getPriceStatic($product->id, true, $pa['id_product_attribute'], 2, null, false, false),
                     'sale' => Product::getPriceStatic($product->id, true, $pa['id_product_attribute'], 2),
                     'quantity' => StockAvailable::getQuantityAvailableByProduct($product->id, $pa['id_product_attribute']),
@@ -178,6 +181,8 @@ class SIGenerator
                 'id' => $product->id,
                 'name' => $product->name,
                 'url' => $product->getLink(),
+                'ean' => $product->ean13,
+                'reference' => $product->reference,
                 'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($cover['id_image'] ?? 0), $img_size),
                 'description' => $product->description,
                 'date_created' => $product->date_add,

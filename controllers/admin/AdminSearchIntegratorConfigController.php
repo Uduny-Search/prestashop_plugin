@@ -45,7 +45,8 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
     public function renderContent(){
         if(Tools::isSubmit('ajax')) return;
 
-        $url = _PS_BASE_URL_SSL_ . '/' . $this->context->language->iso_code . '/?' . Udsearchintegrator::TESTING_PARAM . '=' . Udsearchintegrator::TESTING_VALUE;
+        $langs = Language::getLanguages();
+        $url = _PS_BASE_URL_SSL_ . ((count($langs) > 1) ? '/' . $this->context->language->iso_code : '') . '/?' . Udsearchintegrator::TESTING_PARAM . '=' . Udsearchintegrator::TESTING_VALUE;
         $config = $this->module->getConfig();
         $fields_form = array([
             'form' => array(

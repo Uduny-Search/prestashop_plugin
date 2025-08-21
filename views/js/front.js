@@ -13,7 +13,7 @@
  *  @license   Commercial license
  */
 
-window.udSearchAddToCart = function(id_product, id_product_attribute, quantity, param){
+window.udSearchAddToCart = function(id_product, id_product_attribute, param){
     $.ajax({
         url: udsi_cart_url,
         method: 'POST',
@@ -22,7 +22,7 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, quantity, 
             action: 'update',
             id_product: id_product,
             id_customization: 0,
-            qty: quantity,
+            qty: 1,
             add: 1,
             param
         },

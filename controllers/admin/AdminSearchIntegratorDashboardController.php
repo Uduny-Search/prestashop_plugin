@@ -58,6 +58,10 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
         $this->context->controller->addJS($this->module->getLocalPath() . 'views/js/back.js');
 
         // $this->context->controller->addCSS($this->module->getLocalPath() . 'views/css/config.css');
+        $url = _PS_BASE_URL_SSL_ . ((count($this->context->language->getLanguages()) > 1) ? '/' . $this->context->language->iso_code : '') . '/' . Udsearchintegrator::MODULE_ROUTE . '/{your-custom-route}?limit={item-limit}&offset={item-offset}';
+        $this->informations = array(
+            'Access via: <pre>'. $url . '</pre>'
+        );
 
         $custom_link = array(
             array(

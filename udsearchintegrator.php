@@ -212,7 +212,17 @@ class Udsearchintegrator extends Module
                         (isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
                         '?' . http_build_query($queryParams);
 
+                $customUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') .
+                        (isset($parsedUrl['host']) ? $parsedUrl['host'] : '') .
+                        '/js/custom.js';
+
                 $this->context->controller->registerJavascript('searchintegrator', $newUrl, [
+                    'server' => 'remote',
+                    'position' => 'bottom', // or 'head'
+                    'priority' => 100, // optional
+                ]);
+
+                $this->context->controller->registerJavascript('customsearchintegrator', $customUrl, [
                     'server' => 'remote',
                     'position' => 'bottom', // or 'head'
                     'priority' => 100, // optional

@@ -54,7 +54,8 @@ class SIGenerator
                     LEFT JOIN `'._DB_PREFIX_.'product` p ON cp.id_product = p.id_product
                     LEFT JOIN `'._DB_PREFIX_.'stock_available` sa ON sa.id_product = p.id_product
                         AND sa.id_product_attribute = 0
-                WHERE 1=1';
+                WHERE 1=1
+                    AND p.id_product > 0';
         
         switch($this->config['filter_active']){
             case self::PRODUCT_ALL: {

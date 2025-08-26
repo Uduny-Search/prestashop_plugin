@@ -86,6 +86,7 @@ class Udsearchintegrator extends Module
     {
         $array = array(
             'SCRIPT_SRC' => '',
+            'CUSTOM_SCRIPT' => '',
             'IS_PRODUCTION' => 0,
             'IMG_SIZE' => 1,
             'SERVER_WHITELIST' => '',
@@ -134,6 +135,7 @@ class Udsearchintegrator extends Module
         $current = self::getConfig();
         $updatedConfig = array(
             'SCRIPT_SRC' => (isset($config['SCRIPT_SRC']) ? $config['SCRIPT_SRC'] : $current['SCRIPT_SRC']),
+            'CUSTOM_SCRIPT' => (isset($config['CUSTOM_SCRIPT']) ? $config['CUSTOM_SCRIPT'] : $current['CUSTOM_SCRIPT']),
             'IS_PRODUCTION' => (isset($config['IS_PRODUCTION']) ? $config['IS_PRODUCTION'] : $current['IS_PRODUCTION']),
             'IMG_SIZE' => (isset($config['IMG_SIZE']) ? $config['IMG_SIZE'] : $current['IMG_SIZE']),
             'SERVER_WHITELIST' => (isset($config['SERVER_WHITELIST']) ? $config['SERVER_WHITELIST'] : $current['SERVER_WHITELIST']),
@@ -212,29 +214,26 @@ class Udsearchintegrator extends Module
                         (isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
                         '?' . http_build_query($queryParams);
 
-                $customUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') .
-                        (isset($parsedUrl['host']) ? $parsedUrl['host'] : '') .
-                        '/js/custom.js';
-
                 $this->context->controller->registerJavascript('searchintegrator', $newUrl, [
                     'server' => 'remote',
                     'position' => 'bottom', // or 'head'
                     'priority' => 100, // optional
                 ]);
-
-                $this->context->controller->registerJavascript('customsearchintegrator', $customUrl, [
+            }
+            if(!empty($config['CUSTOM_SCRIPT']) && Validate::isAbsoluteUrl($config['CUSTOM_SCRIPT'])){
+                $this->context->controller->registerJavascript('customsearchintegrator', $config['CUSTOM_SCRIPT'], [
                     'server' => 'remote',
                     'position' => 'bottom', // or 'head'
                     'priority' => 100, // optional
                 ]);
-
-                $this->context->controller->registerJavascript('udsi_front_js', $this->_path . 'views/js/front.js');
-                // $this->context->controller->registerJavascript('udsi_gtag_js', $this->_path . 'views/js/gtag-custom.js');
-
-                Media::addJsDef([
-                    'udsi_cart_url' => $this->context->link->getPageLink('cart', true),
-                ]);
             }
+
+            $this->context->controller->registerJavascript('udsi_front_js', $this->_path . 'views/js/front.js');
+            // $this->context->controller->registerJavascript('udsi_gtag_js', $this->_path . 'views/js/gtag-custom.js');
+
+            Media::addJsDef([
+                'udsi_cart_url' => $this->context->link->getPageLink('cart', true),
+            ]);
         }
     }
 }

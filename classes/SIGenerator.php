@@ -157,17 +157,34 @@ class SIGenerator
                 $attr_combinations = array();
                 foreach(Product::getAttributesParams($product->id, $pa['id_product_attribute']) as $attr_combination){
                     $attr_combinations[] = array(
+                      	'slug' => Tools::str2url($attr_combination['group']),
                         'id_group' => $attr_combination['id_attribute_group'],
                         'id_value' => $attr_combination['id_attribute'],
                         'group' => $attr_combination['group'],
                         'value' => $attr_combination['name'],
                     );
                 }
+                if(empty($attr_combinations)) continue;
+                
                 $images = Image::getImages($id_lang, $product->id, $pa['id_product_attribute']);
                 $product_variant = new Combination($pa['id_product_attribute']);
+                $variant_url = $this->context->link->getProductLink(
+                    $product->id,
+                    null,
+                    null,
+                    null,
+                    $id_lang,
+                    null,
+                    $pa['id_product_attribute'],
+                    false,
+                    false,
+                    true
+                );
+              
                 $variants[] = array(
                     'variant_id' => $pa['id_product_attribute'],
                     'name' => $product->name,
+                  	'url' => $variant_url,
                     'ean' => $product_variant->ean13,
                     'reference' => $product_variant->reference,
                     'price' => Product::getPriceStatic($product->id, true, $pa['id_product_attribute'], 2, null, false, false),

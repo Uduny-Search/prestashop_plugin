@@ -12,7 +12,6 @@
  *  @copyright 2022 PT. Jawa Kreatif Design
  *  @license   Commercial license
  */
-
 window.udSearchAddToCart = function(id_product, id_product_attribute, param){
     $.ajax({
         url: udsi_cart_url,
@@ -28,6 +27,7 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
         },
         success: function(result){
             console.log(result);
+            if(result.hasError) return;
             prestashop.blockcart = prestashop.blockcart || {};
 
             var showModal = prestashop.blockcart.showModal || function (modal) {
@@ -47,7 +47,7 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
                 data: {
                     action: 'add-to-cart',
                     id_product: id_product,
-                    id_product_attribute: id_product_attribute,
+                    id_product_attribute: result.id_product_attribute,
                     id_customization: 0,
                 },
                 success: function(result){

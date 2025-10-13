@@ -91,13 +91,6 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                         'col' => 7,
                     ),
                     array(
-                        'type' => 'text',
-                        'label' => $this->trans('Custom Script URL', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
-                        'name' => 'CUSTOM_SCRIPT',
-                        'desc' => $this->trans('Embedded Custom JS Script.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
-                        'col' => 7,
-                    ),
-                    array(
                         'type' => 'switch',
                         'label' => $this->trans('Production Mode', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'IS_PRODUCTION',
@@ -130,7 +123,6 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
         $form->fields_value = array(
             'IS_PRODUCTION' => $config['IS_PRODUCTION'] ?? 0,
             'SCRIPT_SRC' => $config['SCRIPT_SRC'] ?? '',
-            'CUSTOM_SCRIPT' => $config['CUSTOM_SCRIPT'] ?? '',
             'IMG_SIZE' => $config['IMG_SIZE'] ?? 0,
             'SERVER_WHITELIST' => $config['SERVER_WHITELIST'] ?? '',
             'MASTER_TOKEN' => $config['MASTER_TOKEN'] ?? '',
@@ -149,7 +141,6 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             }
             $config = array(
                 'SCRIPT_SRC' => Tools::getValue('SCRIPT_SRC', ''),
-                'CUSTOM_SCRIPT' => Tools::getValue('CUSTOM_SCRIPT', ''),
                 'IS_PRODUCTION' => Tools::getValue('IS_PRODUCTION', 0),
                 'IMG_SIZE' => Tools::getValue('IMG_SIZE', 0),
                 'SERVER_WHITELIST' => implode(',', $ips),

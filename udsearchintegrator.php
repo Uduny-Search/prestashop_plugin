@@ -63,6 +63,8 @@ class Udsearchintegrator extends Module
 
         return parent::install() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
+            $this->registerHook('actionValidateOrderAfter') &&
+            $this->registerHook('actionCartUpdateQuantityBefore') &&
             // $this->registerHook('displayOrderConfirmation') &&
             $this->registerHook('moduleRoutes');
     }
@@ -86,7 +88,6 @@ class Udsearchintegrator extends Module
     {
         $array = array(
             'SCRIPT_SRC' => '',
-            'CUSTOM_SCRIPT' => '',
             'IS_PRODUCTION' => 0,
             'IMG_SIZE' => 1,
             'SERVER_WHITELIST' => '',
@@ -135,7 +136,6 @@ class Udsearchintegrator extends Module
         $current = self::getConfig();
         $updatedConfig = array(
             'SCRIPT_SRC' => (isset($config['SCRIPT_SRC']) ? $config['SCRIPT_SRC'] : $current['SCRIPT_SRC']),
-            'CUSTOM_SCRIPT' => (isset($config['CUSTOM_SCRIPT']) ? $config['CUSTOM_SCRIPT'] : $current['CUSTOM_SCRIPT']),
             'IS_PRODUCTION' => (isset($config['IS_PRODUCTION']) ? $config['IS_PRODUCTION'] : $current['IS_PRODUCTION']),
             'IMG_SIZE' => (isset($config['IMG_SIZE']) ? $config['IMG_SIZE'] : $current['IMG_SIZE']),
             'SERVER_WHITELIST' => (isset($config['SERVER_WHITELIST']) ? $config['SERVER_WHITELIST'] : $current['SERVER_WHITELIST']),
@@ -174,6 +174,105 @@ class Udsearchintegrator extends Module
         return $route;
     }
 
+    public function hookActionValidateOrderAfter($params)
+    {
+        $order = $params['order'];
+        $products = array();
+        $product_count = 0;
+        foreach($order->getOrderDetailList() as $product){
+            $product_count += $product['product_quantity'];
+            $products[] = array(
+                'product_id' => $product['product_id'],
+                'product_name' => $product['product_name'],
+                'quantity' => $product['product_quantity'],
+                'price' => $product['product_price'],
+            );
+        }
+
+        $data = array(
+            'event' => 'purchase',
+            'order_id' => $order->id,
+            'total_amount' => $order->total_paid_tax_incl,
+            'total_quantity' => $product_count,
+            'data' => $products,
+        );
+
+        // send to API
+        self::sendAPI($data);
+    }
+
+    public function hookActionCartUpdateQuantityBefore($params)
+    {
+        if($params['operator'] != 'up') return;
+
+        $cartProductQuantity = $params['cart']->getProductQuantity(
+            $params['product']->id,
+            $params['id_product_attribute'],
+            (int) $params['id_customization'],
+            (int) $params['id_address_delivery']
+        );
+
+        if(!empty($cartProductQuantity['quantity'])){
+            $productQuantity = Product::getQuantity($params['product']->id, $params['id_product_attribute'], null, $params['cart'], false);
+            $availableOutOfStock = Product::isAvailableWhenOutOfStock(StockAvailable::outOfStock($params['product']->id));
+            $updateQuantity = '+ ' . $params['quantity'];
+            $newProductQuantity = $productQuantity - $params['quantity'];
+
+            if ($newProductQuantity < 0 && !$availableOutOfStock) {
+                return;
+            }
+        } else {
+
+            $sql = 'SELECT stock.out_of_stock, IFNULL(stock.quantity, 0) as quantity
+                        FROM ' . _DB_PREFIX_ . 'product p
+                        ' . Product::sqlStock('p', $params['id_product_attribute'], true, $params['shop']) . '
+                        WHERE p.id_product = ' . $params['product']->id;
+
+            $result2 = Db::getInstance()->getRow($sql);
+
+            // Quantity for product pack
+            if (Pack::isPack($params['product']->id)) {
+                $result2['quantity'] = Pack::getQuantity($params['product']->id, $params['id_product_attribute'], null, $params['cart'], false);
+            }
+
+            if (isset($result2['out_of_stock']) && !Product::isAvailableWhenOutOfStock((int) $result2['out_of_stock'])) {
+                if ((int) $params['quantity'] > $result2['quantity']) {
+                    return;
+                }
+            }
+
+            if (!empty($params['id_product_attribute'])) {
+                $minimal_quantity = (int) ProductAttribute::getAttributeMinimalQty($params['id_product_attribute']);
+            } else {
+                $minimal_quantity = (int) $params['product']->minimal_quantity;
+            }
+
+            if ((int) $params['quantity'] < $minimal_quantity) {
+                return;
+            }
+        }
+
+        $specific_price_output = null;
+        $price = Product::getPriceStatic($params['product']->id, true, $params['id_product_attribute'], 2, null, false, true, 1, false, null, null, null, $specific_price_output, true, true, null, true, $params['id_customization']);
+        $carts = array(
+            'product_id' => $params['product']->id,
+            'product_name' => $params['product']->name,
+            'quantity' => $params['quantity'],
+            'price' => $price,
+        );
+
+        $data = array(
+            'event' => 'add_to_cart',
+            'order_id' => null,
+            'total_amount' => $params['quantity'] * $price,
+            'total_quantity' => $params['quantity'],
+            'data' => [$carts],
+        );
+
+        // send to API
+        self::sendAPI($data);
+    }
+
     // public function hookDisplayOrderConfirmation($params)
     // {
     //     $order = $params['orders'];
@@ -199,41 +298,88 @@ class Udsearchintegrator extends Module
         $config = self::getConfig();
         if($config['IS_PRODUCTION'] || Tools::isSubmit(self::TESTING_PARAM) || Tools::getValue(self::TESTING_PARAM) == self::TESTING_VALUE){
             if(!empty($config['SCRIPT_SRC']) && Validate::isAbsoluteUrl($config['SCRIPT_SRC'])){
-                $parsedUrl = parse_url($config['SCRIPT_SRC']);
+                //$parsedUrl = parse_url($config['SCRIPT_SRC']);
 
-                $queryParams = [];
-                if (isset($parsedUrl['query'])) {
-                    parse_str($parsedUrl['query'], $queryParams);
-                }
+                //$queryParams = [];
+                //if (isset($parsedUrl['query'])) {
+                    //parse_str($parsedUrl['query'], $queryParams);
+                //}
 
-                $queryParams['host'] = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
-                $queryParams['lang'] = $this->context->language->iso_code;
+                //$queryParams['host'] = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+                //$queryParams['lang'] = $this->context->language->iso_code;
 
-                $newUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') .
-                        (isset($parsedUrl['host']) ? $parsedUrl['host'] : '') .
-                        (isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
-                        '?' . http_build_query($queryParams);
-
-                $this->context->controller->registerJavascript('searchintegrator', $newUrl, [
+                //$newUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') .
+                        //(isset($parsedUrl['host']) ? $parsedUrl['host'] : '') .
+                        //(isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
+                        //'?' . http_build_query($queryParams);
+				Media::addJsDef([
+                    'udsi_cart_url' => $this->context->link->getPageLink('cart', true)
+                ]);
+                $this->context->controller->registerJavascript('searchintegrator', $config['SCRIPT_SRC'] . '?lang=' . $this->context->language->iso_code, [
                     'server' => 'remote',
                     'position' => 'bottom', // or 'head'
                     'priority' => 100, // optional
                 ]);
+
+                $this->context->controller->registerJavascript('udsi_front_js', $this->_path . 'views/js/front.js');
+                // $this->context->controller->registerJavascript('udsi_gtag_js', $this->_path . 'views/js/gtag-custom.js');
+
             }
-            if(!empty($config['CUSTOM_SCRIPT']) && Validate::isAbsoluteUrl($config['CUSTOM_SCRIPT'])){
-                $this->context->controller->registerJavascript('customsearchintegrator', $config['CUSTOM_SCRIPT'], [
-                    'server' => 'remote',
-                    'position' => 'bottom', // or 'head'
-                    'priority' => 100, // optional
-                ]);
+        }
+    }
+
+    public static function sendAPI($data)
+    {
+        $config = self::getConfig();
+        if(!Validate::isAbsoluteUrl($config['SCRIPT_SRC'])) return false;
+
+        $url = parse_url($config['SCRIPT_SRC']);
+        $api_url = $url['scheme']."://".$url['host']."/api/store-event-cms";
+
+        try {
+            $curl = curl_init();
+
+            if ($curl === false) {
+                throw new Exception('cURL initialization failed.');
             }
 
-            $this->context->controller->registerJavascript('udsi_front_js', $this->_path . 'views/js/front.js');
-            // $this->context->controller->registerJavascript('udsi_gtag_js', $this->_path . 'views/js/gtag-custom.js');
+            curl_setopt($curl, CURLOPT_URL, $api_url);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                // 'Content-Length: ' . strlen(http_build_query($data))
+            ));
 
-            Media::addJsDef([
-                'udsi_cart_url' => $this->context->link->getPageLink('cart', true),
-            ]);
+            $response = curl_exec($curl);
+
+            if ($response === false) {
+                throw new Exception('cURL request failed: ' . curl_error($curl));
+            }
+
+            if (empty($response)) {
+                return false;
+            }
+
+            $result = json_decode($response, true);
+
+            if ($data === null) {
+                throw new Exception('Error decoding JSON: ' . json_last_error_msg());
+            }
+
+        } catch (Exception $e) {
+            $error[] = $e->getMessage();
+        } finally {
+            if (isset($curl)) {
+                curl_close($curl);
+            }
+
+            if(empty($error)){
+                return true;
+            }
+
+            return false;
         }
     }
 }

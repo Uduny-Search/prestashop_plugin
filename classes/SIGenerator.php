@@ -22,26 +22,28 @@ class SIGenerator
     public $show_total = false;
     public $limit = 100;
     public $offset = 0;
+    public $filters = [];
 
-    public function __construct($id_udsearch_filters, $limit = 100, $offset = 0)
+    public function __construct($id_udsearch_filters, $limit = 100, $offset = 0, $filters = [])
     {
         $this->context = Context::getContext();
         $this->limit = $limit;
         $this->offset = $offset;
         $this->config = $this->getFilters($id_udsearch_filters);
+        $this->filters = $filters;
         $this->products = $this->getProducts();
     }
 
     public function getFilters($id_udsearch_filters)
     {
-        $sql = 'SELECT * 
+        $sql = 'SELECT *
                 FROM `'._DB_PREFIX_.'udsearch_filters`
                 WHERE id_udsearch_filters = '. $id_udsearch_filters;
 
         $result = DB::getInstance()->getRow($sql);
         if(isset($result['filter_category'])) $result['filter_category'] = json_decode($result['filter_category'], true);
         if(isset($result['filter_brand'])) $result['filter_brand'] = json_decode($result['filter_brand'], true);
-        
+
         return $result;
     }
 
@@ -56,7 +58,7 @@ class SIGenerator
                         AND sa.id_product_attribute = 0
                 WHERE 1=1
                     AND p.id_product > 0';
-        
+
         switch($this->config['filter_active']){
             case self::PRODUCT_ALL: {
                 break;
@@ -92,6 +94,10 @@ class SIGenerator
         }
         if(!empty($this->config['filter_brand'])){
             $sql .= ' AND p.id_manufacturer IN ('. implode(',', $this->config['filter_brand']) . ')';
+        }
+
+        if(!empty($this->filters['modified_from']) && Validate::isDateFormat($this->filters['modified_from'])) {
+            $sql .= ' AND p.date_upd > "'. $this->filters['modified_from'] .'"';
         }
 
         $sql .= ' GROUP BY p.id_product';
@@ -148,7 +154,7 @@ class SIGenerator
                         'options' => array(),
                     );
                 }
-                
+
                 $combinations[$name]['options'][] = $feature['value'];
             }
 
@@ -165,7 +171,7 @@ class SIGenerator
                     );
                 }
                 if(empty($attr_combinations)) continue;
-                
+
                 $images = Image::getImages($id_lang, $product->id, $pa['id_product_attribute']);
                 $product_variant = new Combination($pa['id_product_attribute']);
                 $variant_url = $this->context->link->getProductLink(
@@ -180,7 +186,7 @@ class SIGenerator
                     false,
                     true
                 );
-              
+
                 $variants[] = array(
                     'variant_id' => $pa['id_product_attribute'],
                     'name' => $product->name,
@@ -194,7 +200,12 @@ class SIGenerator
                     'combinations' => $attr_combinations,
                 );
             }
-          
+
+            $images = array();
+            foreach(Image::getImages($id_lang, $product->id) as $image){
+                $images[] = $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($image['id_image'] ?? 0), $img_size);
+            }
+
             $arr = array(
                 'id' => $product->id,
                 'name' => $product->name,
@@ -202,6 +213,7 @@ class SIGenerator
                 'ean' => $product->ean13,
                 'reference' => $product->reference,
                 'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($cover['id_image'] ?? 0), $img_size),
+                'images' => $images,
                 'description' => $product->description,
                 'date_created' => $product->date_add,
                 'price' => Product::getPriceStatic($product->id, true, null, 2, null, false, false),

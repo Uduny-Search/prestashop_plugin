@@ -34,17 +34,22 @@ class UdsearchintegratorFeedModuleFrontController extends ModuleFrontController 
         $whitelisted = !empty($config['SERVER_WHITELIST']) ? explode(',', $config['SERVER_WHITELIST']) : array();
         if(!empty($whitelisted) && ((!Tools::isSubmit('token') || Tools::getValue('token') != $config['MASTER_TOKEN']) && !in_array($this->getVisitorIP(), $whitelisted))) exit;
 
-        $sql = 'SELECT id_udsearch_filters 
-                FROM `'._DB_PREFIX_.'udsearch_filters` 
+        $sql = 'SELECT id_udsearch_filters
+                FROM `'._DB_PREFIX_.'udsearch_filters`
                 WHERE slug = "'.Tools::getValue('link_rewrite').'"';
 
         $id = DB::getInstance()->getValue($sql);
-    	$data = new SIGenerator(!empty($id) ? $id : 0, (int)Tools::getValue('limit', 100), (int)Tools::getValue('offset', 0));
-        
+        $filters = [];
+        if(Tools::isSubmit('modified_from') && Validate::isDateFormat(Tools::getValue('modified_from'))){
+            $filters['modified_from'] = Tools::getValue('modified_from');
+        }
+
+    	$data = new SIGenerator(!empty($id) ? $id : 0, (int)Tools::getValue('limit', 100), (int)Tools::getValue('offset', 0), $filters);
+
         if(Tools::getValue('request_total') == 1){
             $data->show_total = true;
         }
-        
+
         if(Tools::isSubmit('xml') && Tools::getValue('xml') == 1){
             header("content-type: text/xml");
             echo exit(json_encode($data->getXML()));

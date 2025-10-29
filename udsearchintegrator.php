@@ -29,7 +29,7 @@ class Udsearchintegrator extends Module
     {
         $this->name = 'udsearchintegrator';
         $this->tab = 'administration';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'Unusual Dope';
         $this->need_instance = 0;
 
@@ -242,7 +242,11 @@ class Udsearchintegrator extends Module
             }
 
             if (!empty($params['id_product_attribute'])) {
-                $minimal_quantity = (int) ProductAttribute::getAttributeMinimalQty($params['id_product_attribute']);
+                if(version_compare(_PS_VERSION_, '8.0.0', '>=')){
+                    $minimal_quantity = (int) ProductAttribute::getAttributeMinimalQty($params['id_product_attribute']);
+                } else {
+                    $minimal_quantity = (int) Attribute::getAttributeMinimalQty($params['id_product_attribute']);
+                }
             } else {
                 $minimal_quantity = (int) $params['product']->minimal_quantity;
             }

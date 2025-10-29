@@ -39,7 +39,7 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
                 }
                 });
             };
-            
+
             $.ajax({
                 url: $('.blockcart').data('refresh-url'),
                 method: 'POST',
@@ -60,4 +60,47 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
             });
         }
     });
+}
+
+$(document).ready(function () {
+    var session_id = udsGetSession('uds_session_id');
+    if(!session_id) {
+        session_id = window.UdunySearch.user_session;
+        udsSetSession('uds_session_id', session_id);
+        $.ajax({
+            url: udsi_options.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'udsi_store_session_id',
+                session_id: session_id
+            },
+            success: function (response) {
+                console.log('New Session ID:', session_id);
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+            }
+        });
+    }
+})
+
+function udsSetSession(key, value) {
+    const data = {
+        value: value,
+        expiry: new Date().getTime() + 7200000
+    };
+    sessionStorage.setItem(key, JSON.stringify(data));
+}
+
+function udsGetSession(key) {
+    const data = JSON.parse(sessionStorage.getItem(key));
+    if (!data) return null;
+
+    const currentTime = new Date().getTime();
+    if (currentTime > data.expiry) {
+        sessionStorage.removeItem(key);
+        return null;
+    }
+
+    return data.value;
 }

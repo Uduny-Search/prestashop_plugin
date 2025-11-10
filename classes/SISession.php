@@ -92,6 +92,8 @@ class SISession extends ObjectModel
     public static function validateCSRF($token)
     {
         $csrf = Context::getContext()->cookie->__get('udsi_csrf');
+        Context::getContext()->cookie->__unset('udsi_csrf');
+
         if(empty($csrf) || $csrf != $token) return false;
 
         return true;

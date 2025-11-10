@@ -2,7 +2,7 @@
 <module>
     <name>udsearchintegrator</name>
     <displayName><![CDATA[UD Search Integrator]]></displayName>
-    <version><![CDATA[1.0.0]]></version>
+    <version><![CDATA[1.0.1]]></version>
     <description><![CDATA[Exporting all of your product for search and SEO optimization]]></description>
     <author><![CDATA[Unusual Dope]]></author>
     <tab><![CDATA[administration]]></tab>

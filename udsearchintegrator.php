@@ -29,7 +29,7 @@ class Udsearchintegrator extends Module
     {
         $this->name = 'udsearchintegrator';
         $this->tab = 'administration';
-        $this->version = '1.0.1';
+        $this->version = '1.0.3';
         $this->author = 'Unusual Dope';
         $this->need_instance = 0;
 
@@ -82,6 +82,7 @@ class Udsearchintegrator extends Module
     private function loadModuleClasses()
     {
         require_once($this->getLocalPath() . 'classes/SIGenerator.php');
+        require_once($this->getLocalPath() . 'classes/SISession.php');
     }
 
     public static function initConfig()
@@ -316,8 +317,13 @@ class Udsearchintegrator extends Module
                         //(isset($parsedUrl['host']) ? $parsedUrl['host'] : '') .
                         //(isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
                         //'?' . http_build_query($queryParams);
+                $token = SISession::getCSRF();
 				Media::addJsDef([
-                    'udsi_cart_url' => $this->context->link->getPageLink('cart', true)
+                    'udsi_cart_url' => $this->context->link->getPageLink('cart', true),
+                    'udsi_options' => array(
+                        'ajax_url' => $this->context->link->getModuleLink($this->name, 'session'),
+                        'token' => $token,
+                    ),
                 ]);
                 $this->context->controller->registerJavascript('searchintegrator', $config['SCRIPT_SRC'] . '?lang=' . $this->context->language->iso_code, [
                     'server' => 'remote',

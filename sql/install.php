@@ -27,6 +27,15 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'udsearch_filters` (
     PRIMARY KEY  (`id_udsearch_filters`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'udsearch_sessions` (
+    `id_udsearch_sessions` int(11) NOT NULL AUTO_INCREMENT,
+    `id_guest` INT(11) NOT NULL,
+    `id_customer` INT(11),
+    `uduny_sess` VARCHAR(255) NOT NULL,
+    `date_add` DATETIME,
+    PRIMARY KEY  (`id_udsearch_sessions`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
         return false;

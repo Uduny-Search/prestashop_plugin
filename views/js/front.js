@@ -71,14 +71,14 @@ $(document).ready(function () {
             url: udsi_options.ajax_url,
             type: 'POST',
             data: {
-                action: 'udsi_store_session_id',
-                session_id: session_id
+                ajax: 1,
+                action: 'sess',
+                session_id: session_id,
+                token: udsi_options.token
             },
             success: function (response) {
-                console.log('New Session ID:', session_id);
             },
             error: function (xhr, status, error) {
-                console.error('AJAX Error:', status, error);
             }
         });
     }

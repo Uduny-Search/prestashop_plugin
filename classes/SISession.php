@@ -28,9 +28,30 @@ class SISession extends ObjectModel
     {
         $sql = 'SELECT *
                 FROM '. _DB_PREFIX_ . self::$definition['table'] .'
-                WHERE uduny_sess = "'. $session .'"';
+                WHERE uduny_sess = "'. $session .'"
+                ORDER BY id_udsearch_sessions DESC';
 
         return DB::getInstance()->getRow($sql);
+    }
+
+    public static function getTokenByCustomer($id_customer)
+    {
+        $sql = 'SELECT uduny_sess
+                FROM '. _DB_PREFIX_ . self::$definition['table'] .'
+                WHERE id_customer = "'. $id_customer .'"
+                ORDER BY id_udsearch_sessions DESC';
+
+        return DB::getInstance()->getValue($sql);
+    }
+
+    public static function getTokenByGuest($id_guest)
+    {
+        $sql = 'SELECT uduny_sess
+                FROM '. _DB_PREFIX_ . self::$definition['table'] .'
+                WHERE id_guest = "'. $id_guest .'"
+                ORDER BY id_udsearch_sessions DESC';
+
+        return DB::getInstance()->getValue($sql);
     }
 
     public static function createSession($session, Context $context)

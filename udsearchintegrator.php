@@ -190,12 +190,14 @@ class Udsearchintegrator extends Module
             );
         }
 
+        $token = SISession::getTokenByCustomer($order->id_customer);
         $data = array(
             'event' => 'purchase',
             'order_id' => $order->id,
             'total_amount' => $order->total_paid_tax_incl,
             'total_quantity' => $product_count,
             'data' => $products,
+            'user_session' => $token,
         );
 
         // send to API
@@ -266,12 +268,20 @@ class Udsearchintegrator extends Module
             'price' => $price,
         );
 
+        $token = '';
+        if($params['cart']->id_customer){
+            $token = SISession::getTokenByCustomer($params['cart']->id_customer);
+        } else {
+            $token = SISession::getTokenByGuest($params['cart']->id_guest);
+        }
+
         $data = array(
             'event' => 'add_to_cart',
             'order_id' => null,
             'total_amount' => $params['quantity'] * $price,
             'total_quantity' => $params['quantity'],
             'data' => [$carts],
+            'user_session' => $token,
         );
 
         // send to API
@@ -345,7 +355,9 @@ class Udsearchintegrator extends Module
 
         $url = parse_url($config['SCRIPT_SRC']);
         $api_url = $url['scheme']."://".$url['host']."/api/store-event-cms";
-
+		$current_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $current_host = $_SERVER['HTTP_HOST'];
+		$current_origin = $current_scheme . '://' . $current_host;
         try {
             $curl = curl_init();
 
@@ -359,7 +371,7 @@ class Udsearchintegrator extends Module
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
-                // 'Content-Length: ' . strlen(http_build_query($data))
+            	'Origin: ' . $current_origin
             ));
 
             $response = curl_exec($curl);

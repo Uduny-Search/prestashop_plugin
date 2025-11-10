@@ -63,10 +63,8 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
 }
 
 $(document).ready(function () {
-    var session_id = udsGetSession('uds_session_id');
-    if(!session_id) {
-        session_id = window.UdunySearch.user_session;
-        udsSetSession('uds_session_id', session_id);
+    session_id = window.UdunySearch.user_session;
+    if(session_id){
         $.ajax({
             url: udsi_options.ajax_url,
             type: 'POST',

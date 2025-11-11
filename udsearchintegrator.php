@@ -261,12 +261,6 @@ class Udsearchintegrator extends Module
 
         $specific_price_output = null;
         $price = Product::getPriceStatic($params['product']->id, true, $params['id_product_attribute'], 2, null, false, true, 1, false, null, null, null, $specific_price_output, true, true, null, true, $params['id_customization']);
-        $carts = array(
-            'product_id' => $params['product']->id,
-            'product_name' => $params['product']->name,
-            'quantity' => $params['quantity'],
-            'price' => $price,
-        );
 
         $token = '';
         if($params['cart']->id_customer){
@@ -277,10 +271,10 @@ class Udsearchintegrator extends Module
 
         $data = array(
             'event' => 'add_to_cart',
-            'order_id' => null,
-            'total_amount' => $params['quantity'] * $price,
-            'total_quantity' => $params['quantity'],
-            'data' => [$carts],
+            'product_id' => $params['product']->id,
+            'product_name' => $params['product']->name,
+            'quantity' => $params['quantity'],
+            'price' => $price,
             'user_session' => $token,
         );
 

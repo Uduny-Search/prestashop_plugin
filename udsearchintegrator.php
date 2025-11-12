@@ -29,7 +29,7 @@ class Udsearchintegrator extends Module
     {
         $this->name = 'udsearchintegrator';
         $this->tab = 'administration';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'Unusual Dope';
         $this->need_instance = 0;
 
@@ -126,17 +126,25 @@ class Udsearchintegrator extends Module
                     'icon' => 'process-icon-cog icon-cog',
                     'disabled' => ($controller_name == 'si_config') ? true : false,
                 ),
+                array(
+                    'href' => $this->context->link->getAdminLink('AdminSearchIntegratorDebug'),
+                    'desc' => $this->trans('Debug', [], 'Modules.Udsearchintegrator.Udsearchintegrator'),
+                    'icon' => 'process-icon-book icon-book',
+                    'disabled' => ($controller_name == 'si_debug') ? true : false,
+                ),
             ),
             'right' => $custom_link,
             'alert' => $alert,
         );
     }
+
     public static function updateConfig($config)
     {
         // configuration check before update
         $current = self::getConfig();
         $updatedConfig = array(
             'SCRIPT_SRC' => (isset($config['SCRIPT_SRC']) ? $config['SCRIPT_SRC'] : $current['SCRIPT_SRC']),
+            'IS_DEBUG' => (isset($config['IS_DEBUG']) ? $config['IS_DEBUG'] : $current['IS_DEBUG']),
             'IS_PRODUCTION' => (isset($config['IS_PRODUCTION']) ? $config['IS_PRODUCTION'] : $current['IS_PRODUCTION']),
             'IMG_SIZE' => (isset($config['IMG_SIZE']) ? $config['IMG_SIZE'] : $current['IMG_SIZE']),
             'SERVER_WHITELIST' => (isset($config['SERVER_WHITELIST']) ? $config['SERVER_WHITELIST'] : $current['SERVER_WHITELIST']),
@@ -352,10 +360,13 @@ class Udsearchintegrator extends Module
 		$current_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $current_host = $_SERVER['HTTP_HOST'];
 		$current_origin = $current_scheme . '://' . $current_host;
+
+        self::logger('DEBUG - ' . $data['event'] . ': ' . json_encode($data));
         try {
             $curl = curl_init();
 
             if ($curl === false) {
+                self::logger('ERROR - cURL initialization failed.');
                 throw new Exception('cURL initialization failed.');
             }
 
@@ -371,21 +382,26 @@ class Udsearchintegrator extends Module
             $response = curl_exec($curl);
 
             if ($response === false) {
+                self::logger('ERROR - cURL request failed: ' . curl_error($curl));
                 throw new Exception('cURL request failed: ' . curl_error($curl));
             }
 
             if (empty($response)) {
+                self::logger('ERROR - Empty response.');
                 return false;
             }
 
             $result = json_decode($response, true);
+            self::logger('DEBUG - Response: ' . json_encode($result));
 
             if ($data === null) {
+                self::logger('ERROR - Error decoding JSON: ' . json_last_error_msg());
                 throw new Exception('Error decoding JSON: ' . json_last_error_msg());
             }
 
         } catch (Exception $e) {
             $error[] = $e->getMessage();
+            self::logger('ERROR - '. $e->getMessage());
         } finally {
             if (isset($curl)) {
                 curl_close($curl);
@@ -397,5 +413,16 @@ class Udsearchintegrator extends Module
 
             return false;
         }
+    }
+
+    public static function logger($message, $force_log = false)
+    {
+        $config = self::getConfig();
+        if(!$config['IS_DEBUG'] || $force_log) return;
+
+        $logFile = dirname(__FILE__) . '/debug/' . date('Y-m-d') . '_uduny.log';
+        $logEntry = date('[Y-m-d H:i:s]') . ' ' . trim($message) . PHP_EOL;
+
+        file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
     }
 }

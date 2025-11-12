@@ -100,6 +100,15 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                         'desc' =>  $this->trans('Testing or Production mode.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                     ),
                     array(
+                        'type' => 'switch',
+                        'label' => $this->trans('Debug mode', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'IS_DEBUG',
+                        'is_bool' => true,
+                        'values' => $this->returnYesNo(),
+                        'default' => 0,
+                        'desc' =>  $this->trans('Debug will write logs on every call.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                    ),
+                    array(
                         'type' => 'html',
                         'label' => $this->trans('Testing Url', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'URL',
@@ -122,6 +131,7 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
         $form->table = $this->name;
         $form->fields_value = array(
             'IS_PRODUCTION' => $config['IS_PRODUCTION'] ?? 0,
+            'IS_DEBUG' => $config['IS_DEBUG'] ?? 0,
             'SCRIPT_SRC' => $config['SCRIPT_SRC'] ?? '',
             'IMG_SIZE' => $config['IMG_SIZE'] ?? 0,
             'SERVER_WHITELIST' => $config['SERVER_WHITELIST'] ?? '',
@@ -142,6 +152,7 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             $config = array(
                 'SCRIPT_SRC' => Tools::getValue('SCRIPT_SRC', ''),
                 'IS_PRODUCTION' => Tools::getValue('IS_PRODUCTION', 0),
+                'IS_DEBUG' => Tools::getValue('IS_DEBUG', 0),
                 'IMG_SIZE' => Tools::getValue('IMG_SIZE', 0),
                 'SERVER_WHITELIST' => implode(',', $ips),
             );

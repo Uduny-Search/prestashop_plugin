@@ -29,7 +29,7 @@ class Udsearchintegrator extends Module
     {
         $this->name = 'udsearchintegrator';
         $this->tab = 'administration';
-        $this->version = '1.0.4';
+        $this->version = '1.0.5';
         $this->author = 'Unusual Dope';
         $this->need_instance = 0;
 
@@ -63,7 +63,7 @@ class Udsearchintegrator extends Module
 
         return parent::install() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
-            $this->registerHook('actionValidateOrderAfter') &&
+            $this->registerHook(version_compare(_PS_VERSION_, '8.0.0', '>=') ? 'actionValidateOrderAfter' : 'ActionValidateOrder') &&
             $this->registerHook('actionCartUpdateQuantityBefore') &&
             // $this->registerHook('displayOrderConfirmation') &&
             $this->registerHook('moduleRoutes');
@@ -210,6 +210,11 @@ class Udsearchintegrator extends Module
 
         // send to API
         self::sendAPI($data);
+    }
+
+    public function hookactionValidateOrder($params)
+    {
+        $this->hookActionValidateOrderAfter($params);
     }
 
     public function hookActionCartUpdateQuantityBefore($params)

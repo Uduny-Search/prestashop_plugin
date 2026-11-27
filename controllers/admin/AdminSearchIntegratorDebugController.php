@@ -22,7 +22,7 @@ class AdminSearchIntegratorDebugController extends ModuleAdminController
     {
         $this->name = 'si_debug';
         $this->bootstrap = true;
-        $this->toolbar_title = "Search Integrator Debug";
+        $this->toolbar_title = "Uduny - Search Integrator Debug";
 
         parent::__construct();
     }

@@ -23,7 +23,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
     {
         $this->name = 'si_dashboard';
         $this->bootstrap = true;
-        $this->toolbar_title = "Search Integrator Filters";
+        $this->toolbar_title = "Uduny - Search Integrator Filters";
 
         parent::__construct();
     }
@@ -45,10 +45,10 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
             } else {
                 $this->context->cookie->__set($this->name, json_encode(array('success' => false, 'message' => $this->trans('There is something wrong when deleting Search Filters!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             }
-            
+
             return Tools::redirectAdmin($this->context->link->getAdminLink('AdminSearchIntegratorDashboard'));
         }
-        
+
         $this->renderWarning();
 
         $custom_link = array();
@@ -164,6 +164,12 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                 'search' => false,
                 'callback' => 'renderCategoryFilter',
             ),
+            'filter_excl_category' => array(
+                'title' => $this->trans('Excluded Category Filter', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
+                'class' => 'fixed-width-lg',
+                'search' => false,
+                'callback' => 'renderCategoryFilter',
+            ),
             'endpoint_url' => array(
                 'title' => $this->trans('Endpoint', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                 'class' => 'fixed-width-md',
@@ -263,8 +269,16 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                         'type' => 'categories_select',
                         'label' => $this->trans('Category', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'name' => 'FILTER_CATEGORY',
-                        'category_tree' => self::renderTargetTree(!empty($config['filter_category']) ? ((is_array($config['filter_category'])) ? $config['filter_category'] : json_decode($config['filter_category'], true)) : array()),
+                        'category_tree' => self::renderTargetTree('FILTER_CATEGORY', !empty($config['filter_category']) ? ((is_array($config['filter_category'])) ? $config['filter_category'] : json_decode($config['filter_category'], true)) : array()),
                         'desc' => $this->trans('Filter by category.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
+                        'col' => 8,
+                    ),
+                    array(
+                        'type' => 'categories_select',
+                        'label' => $this->trans('Excluded Category', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
+                        'name' => 'FILTER_EXCL_CATEGORY',
+                        'category_tree' => self::renderTargetTree('FILTER_EXCL_CATEGORY', !empty($config['filter_excl_category']) ? ((is_array($config['filter_excl_category'])) ? $config['filter_excl_category'] : json_decode($config['filter_excl_category'], true)) : array()),
+                        'desc' => $this->trans('Select excluded category.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'),
                         'col' => 8,
                     ),
                 ),
@@ -283,6 +297,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
             'SLUG' => $config['slug'] ?? '',
             'FILTER_BRAND[]' => json_decode($config['filter_brand'] ?? '[]', true),
             'FILTER_CATEGORY' => $config['filter_category'] ?? array(),
+            'FILTER_EXCL_CATEGORY' => $config['filter_excl_category'] ?? array(),
             'FILTER_STOCK' => $config['filter_stock'] ?? 1,
             'FILTER_ACTIVE' => $config['filter_active'] ?? SIGenerator::PRODUCT_ACTIVE,
         );
@@ -298,6 +313,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
                 'slug' => Tools::str2url(Tools::getValue('SLUG')),
                 'filter_brand' => json_encode(Tools::getValue('FILTER_BRAND', [])),
                 'filter_category' => json_encode(Tools::getValue('FILTER_CATEGORY', [])),
+                'filter_excl_category' => json_encode(Tools::getValue('FILTER_EXCL_CATEGORY', [])),
                 'filter_stock' => Tools::getValue('FILTER_STOCK', SIGenerator::PRODUCT_ON_STOCK_AVAILABLE),
                 'filter_active' => Tools::getValue('FILTER_ACTIVE', SIGenerator::PRODUCT_ALL),
             );
@@ -308,7 +324,7 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
             } else {
                 $result = DB::getInstance()->insert('udsearch_filters', $config);
             }
-            
+
             if ($result) {
                 $this->context->cookie->__set($this->name, json_encode(array('success' => true, 'message' => $this->trans('Search Filters Saved!', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorDashboard'))));
             } else {
@@ -399,19 +415,19 @@ class AdminSearchIntegratorDashboardController extends ModuleAdminController
     }
 
 
-    public function renderTargetTree($selected = array()){
+    public function renderTargetTree($name, $selected = array()){
         if(!is_array($selected)){
             $selected = [$selected];
         }
 
         $root = Category::getRootCategory();
 
-        $tree = new HelperTreeCategories('FILTER_CATEGORY'); //The string in param is the ID used by the generated tree
+        $tree = new HelperTreeCategories($name); //The string in param is the ID used by the generated tree
         $tree->setUseCheckBox(true)
             ->setUseSearch(true)
             ->setRootCategory($root->id)
             ->setSelectedCategories($selected) //if you wanted to be pre-carged
-            ->setInputName('FILTER_CATEGORY')
+            ->setInputName($name)
             ->setDisabledCategories([]); //Set the name of input. The option "name" of $fields_form doesn't seem to work with "categories_select" type
 
         return $tree->render();

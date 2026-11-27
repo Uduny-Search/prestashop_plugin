@@ -42,6 +42,7 @@ class SIGenerator
 
         $result = DB::getInstance()->getRow($sql);
         if(isset($result['filter_category'])) $result['filter_category'] = json_decode($result['filter_category'], true);
+        if(isset($result['filter_excl_category'])) $result['filter_excl_category'] = json_decode($result['filter_excl_category'], true);
         if(isset($result['filter_brand'])) $result['filter_brand'] = json_decode($result['filter_brand'], true);
 
         return $result;
@@ -92,6 +93,13 @@ class SIGenerator
         if(!empty($this->config['filter_category'])){
             $sql .= ' AND cp.id_category IN ('. implode(',', $this->config['filter_category']) .')';
         }
+        if(!empty($this->config['filter_excl_category'])){
+            $sql .= ' AND p.id_product NOT IN (
+                        SELECT DISTINCT id_product
+                        FROM `'._DB_PREFIX_.'category_product`
+                        WHERE id_category IN ('. implode(',', $this->config['filter_excl_category']) .')
+                    )';
+        }
         if(!empty($this->config['filter_brand'])){
             $sql .= ' AND p.id_manufacturer IN ('. implode(',', $this->config['filter_brand']) . ')';
         }
@@ -125,6 +133,11 @@ class SIGenerator
         }
 
         $id_lang = $this->context->language->id ?? Configuration::get('PS_LANG_DEFAULT');
+
+        // multi-currency / multi-shop price list (Uduny `prices` array, same format as Magento module)
+        $price_contexts = SIPriceContext::getContexts((int) $this->context->shop->id);
+        $include_prices = SIPriceContext::shouldIncludePrices($price_contexts);
+
         $json = array();
         foreach($this->products as $product){
             $cover = Image::getCover($product->id);
@@ -187,7 +200,7 @@ class SIGenerator
                     true
                 );
 
-                $variants[] = array(
+                $variant = array(
                     'variant_id' => $pa['id_product_attribute'],
                     'name' => $product->name,
                   	'url' => $variant_url,
@@ -199,6 +212,10 @@ class SIGenerator
                     'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($images[0]['id_image'] ?? ($cover['id_image'] ?? 0)), $img_size),
                     'combinations' => $attr_combinations,
                 );
+                if ($include_prices) {
+                    $variant['prices'] = SIPriceContext::buildPricesArray($product->id, $pa['id_product_attribute'], $price_contexts);
+                }
+                $variants[] = $variant;
             }
 
             $images = array();
@@ -206,6 +223,12 @@ class SIGenerator
                 $images[] = $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($image['id_image'] ?? 0), $img_size);
             }
 
+            $description = $product->description .
+                (!empty($product->reference) ? ' REF: '.$product->reference : '').
+                (!empty($product->ean13) ? ' EAN: '.$product->ean13 : '').
+                (!empty($product->mpn) ? ' MPN: '.$product->mpn : '').
+                (!empty($product->isbn) ? ' ISBN: '.$product->isbn : '').
+                (!empty($product->upc) ? ' UPC: '.$product->upc : '');
             $arr = array(
                 'id' => $product->id,
                 'name' => $product->name,
@@ -214,7 +237,7 @@ class SIGenerator
                 'reference' => $product->reference,
                 'image' => $this->context->link->getImageLink($product->link_rewrite[$id_lang] ?? $product->link_rewrite, (int)($cover['id_image'] ?? 0), $img_size),
                 'images' => $images,
-                'description' => $product->description,
+                'description' => $description,
                 'date_created' => $product->date_add,
                 'price' => Product::getPriceStatic($product->id, true, null, 2, null, false, false),
                 'sale_price' => Product::getPriceStatic($product->id, true, null, 2),
@@ -224,6 +247,11 @@ class SIGenerator
                 'variants' => $variants,
             );
             if($arr['price'] == $arr['sale_price']) $arr['sale_price'] = '';
+            if ($include_prices) {
+                $arr['prices'] = !empty($variants)
+                    ? SIPriceContext::aggregateFromVariants($variants)
+                    : SIPriceContext::buildPricesArray($product->id, 0, $price_contexts);
+            }
             $json[] = $arr;
         }
 
@@ -239,34 +267,34 @@ class SIGenerator
     public function getXML()
     {
         $json = $this->getJson();
-        $export = array();
-        foreach($json as $item){
+        $items = array();
+        foreach(($json['items'] ?? array()) as $item){
             $categories = array();
-            if(!empty($item['categories'])){
-                $categories[] = array(
-                    'category' => array(
-                        'name' => $item['categories']['name'],
-                        'slug' => $item['categories']['slug'],
-                    )
-                );
+            foreach((array) ($item['categories'] ?? array()) as $category_name){
+                $categories[] = array('name' => $category_name);
             }
 
-            $export[] = array(
-                'item' => array(
-                    'id' => $item['id'],
-                    'name' => $item['name'],
-                    'url' => $item['url'],
-                    'image' => $item['image'],
-                    'description' => $item['description'],
-                    'date_created' => $item['date_created'],
-                    'price' => $item['price'],
-                    'sale_price' => $item['sale_price'],
-                    'categories' => $categories,
-                ),
+            $row = array(
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'url' => $item['url'],
+                'image' => $item['image'],
+                'description' => $item['description'],
+                'date_created' => $item['date_created'],
+                'price' => $item['price'],
+                'sale_price' => $item['sale_price'],
+                'categories' => array('category' => $categories),
             );
+            if (!empty($item['prices'])) {
+                $row['prices'] = array('price_entry' => $item['prices']);
+            }
+            $items[] = $row;
         }
 
-        $xml = Array2XML::createXML('feed', $export, array('name' => 'feed'))->saveXML();
+        $export = array('item' => $items);
+        if (isset($json['total'])) $export['total'] = $json['total'];
+
+        $xml = Array2XML::createXML('feed', $export)->saveXML();
 
         return $xml;
     }

@@ -12,6 +12,8 @@
  *  @copyright 2022 PT. Jawa Kreatif Design
  *  @license   Commercial license
  */
+window.UdunySearch = Object.assign(window.UdunySearch || {}, window.udsi_search_config || {});
+
 window.udSearchAddToCart = function(id_product, id_product_attribute, param){
     $.ajax({
         url: udsi_cart_url,
@@ -63,7 +65,7 @@ window.udSearchAddToCart = function(id_product, id_product_attribute, param){
 }
 
 $(document).ready(function () {
-    session_id = window.UdunySearch.user_session;
+    session_id = (window.UdunySearch || {}).user_session;
     if(session_id){
         $.ajax({
             url: udsi_options.ajax_url,

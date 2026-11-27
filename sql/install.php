@@ -24,6 +24,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'udsearch_filters` (
     `filter_stock` TINYINT(1) DEFAULT 1,
     `filter_brand` TEXT,
     `filter_category` TEXT,
+    `filter_excl_category` TEXT,
     PRIMARY KEY  (`id_udsearch_filters`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 

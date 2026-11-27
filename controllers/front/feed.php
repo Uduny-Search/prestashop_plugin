@@ -36,7 +36,7 @@ class UdsearchintegratorFeedModuleFrontController extends ModuleFrontController 
 
         $sql = 'SELECT id_udsearch_filters
                 FROM `'._DB_PREFIX_.'udsearch_filters`
-                WHERE slug = "'.Tools::getValue('link_rewrite').'"';
+                WHERE slug = "'.pSQL(Tools::getValue('link_rewrite')).'"';
 
         $id = DB::getInstance()->getValue($sql);
         $filters = [];
@@ -52,9 +52,11 @@ class UdsearchintegratorFeedModuleFrontController extends ModuleFrontController 
 
         if(Tools::isSubmit('xml') && Tools::getValue('xml') == 1){
             header("content-type: text/xml");
-            echo exit(json_encode($data->getXML()));
+            echo exit($data->getXML());
         }
 
+        // shortest round-trip float output (23.9 instead of 23.899999999999999)
+        ini_set('serialize_precision', '-1');
         header('Content-Type: application/json');
         echo exit(json_encode($data->getJson()));
     }

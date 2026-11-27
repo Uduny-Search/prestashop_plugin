@@ -22,7 +22,7 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
     {
         $this->name = 'si_config';
         $this->bootstrap = true;
-        $this->toolbar_title = "Search Integrator Configuration";
+        $this->toolbar_title = "Uduny - Search Integrator Configuration";
 
         parent::__construct();
     }
@@ -91,6 +91,50 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                         'col' => 7,
                     ),
                     array(
+                        'type' => 'select',
+                        'label' => $this->trans('Pricelist Mode', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'PRICELIST_MODE',
+                        'desc' => $this->trans('Export per location/currency "prices". Auto: only when more than one location/currency pair exists.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'options' => array(
+                            'query' => array(
+                                array('id' => 'auto', 'name' => $this->trans('Auto', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig')),
+                                array('id' => 'always', 'name' => $this->trans('Always', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig')),
+                                array('id' => 'never', 'name' => $this->trans('Never', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig')),
+                            ),
+                            'id' => 'id',
+                            'name' => 'name',
+                        ),
+                        'col' => 3,
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => $this->trans('Currency Location Map', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'CURRENCY_LOCATION_MAP',
+                        'desc' => $this->trans('One per line, CURRENCY=COUNTRY ISO (e.g. USD=US). Overrides the default country for non-default currencies.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 4,
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->trans('Search URL', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'SEARCH_URL',
+                        'desc' => $this->trans('UdunySearch "url" option.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 7,
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->trans('Trigger (clicked)', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'TRIGGER_CLICKED',
+                        'desc' => $this->trans('CSS selector(s) that open search on click.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 5,
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->trans('Trigger (typing)', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'name' => 'TRIGGER_TYPING',
+                        'desc' => $this->trans('CSS selector(s) that open search on typing.', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
+                        'col' => 5,
+                    ),
+                    array(
                         'type' => 'switch',
                         'label' => $this->trans('Production Mode', [], 'Modules.Udsearchintegrator.AdminSearchIntegratorConfig'),
                         'name' => 'IS_PRODUCTION',
@@ -136,6 +180,11 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
             'IMG_SIZE' => $config['IMG_SIZE'] ?? 0,
             'SERVER_WHITELIST' => $config['SERVER_WHITELIST'] ?? '',
             'MASTER_TOKEN' => $config['MASTER_TOKEN'] ?? '',
+            'PRICELIST_MODE' => $config['PRICELIST_MODE'] ?? 'auto',
+            'CURRENCY_LOCATION_MAP' => $config['CURRENCY_LOCATION_MAP'] ?? '',
+            'SEARCH_URL' => $config['SEARCH_URL'] ?? '',
+            'TRIGGER_CLICKED' => $config['TRIGGER_CLICKED'] ?? '',
+            'TRIGGER_TYPING' => $config['TRIGGER_TYPING'] ?? '',
             'URL' => '',
         );
 
@@ -155,6 +204,11 @@ class AdminSearchIntegratorConfigController extends ModuleAdminController
                 'IS_DEBUG' => Tools::getValue('IS_DEBUG', 0),
                 'IMG_SIZE' => Tools::getValue('IMG_SIZE', 0),
                 'SERVER_WHITELIST' => implode(',', $ips),
+                'PRICELIST_MODE' => in_array(Tools::getValue('PRICELIST_MODE'), array('auto', 'always', 'never'), true) ? Tools::getValue('PRICELIST_MODE') : 'auto',
+                'CURRENCY_LOCATION_MAP' => trim((string) Tools::getValue('CURRENCY_LOCATION_MAP', '')),
+                'SEARCH_URL' => trim((string) Tools::getValue('SEARCH_URL', '')),
+                'TRIGGER_CLICKED' => trim((string) Tools::getValue('TRIGGER_CLICKED', '')),
+                'TRIGGER_TYPING' => trim((string) Tools::getValue('TRIGGER_TYPING', '')),
             );
 
             // call server instance to verify

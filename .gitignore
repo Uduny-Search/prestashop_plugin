@@ -1,1 +1,3 @@
 *.log
+debug/*.log
+magento-uduny-plugin-main*

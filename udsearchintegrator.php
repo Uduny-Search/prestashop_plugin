@@ -29,7 +29,7 @@ class Udsearchintegrator extends Module
     {
         $this->name = 'udsearchintegrator';
         $this->tab = 'administration';
-        $this->version = '1.0.5';
+        $this->version = '1.0.8';
         $this->author = 'Unusual Dope';
         $this->need_instance = 0;
 
@@ -40,7 +40,7 @@ class Udsearchintegrator extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->trans('UD Search Integrator', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
+        $this->displayName = $this->trans('Uduny - Search Integrator', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
         $this->description = $this->trans('Exporting all of your product for search and SEO optimization', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
 
         $this->confirmUninstall = $this->trans('Please do not regret your decision!', [], 'Modules.Udsearchintegrator.Udsearchintegrator');
@@ -83,6 +83,7 @@ class Udsearchintegrator extends Module
     {
         require_once($this->getLocalPath() . 'classes/SIGenerator.php');
         require_once($this->getLocalPath() . 'classes/SISession.php');
+        require_once($this->getLocalPath() . 'classes/SIPriceContext.php');
     }
 
     public static function initConfig()
@@ -93,6 +94,11 @@ class Udsearchintegrator extends Module
             'IMG_SIZE' => 1,
             'SERVER_WHITELIST' => '',
             'MASTER_TOKEN' => '',
+            'PRICELIST_MODE' => 'auto',
+            'CURRENCY_LOCATION_MAP' => '',
+            'SEARCH_URL' => '',
+            'TRIGGER_CLICKED' => '',
+            'TRIGGER_TYPING' => '',
         );
 
         return json_encode($array);
@@ -149,6 +155,11 @@ class Udsearchintegrator extends Module
             'IMG_SIZE' => (isset($config['IMG_SIZE']) ? $config['IMG_SIZE'] : $current['IMG_SIZE']),
             'SERVER_WHITELIST' => (isset($config['SERVER_WHITELIST']) ? $config['SERVER_WHITELIST'] : $current['SERVER_WHITELIST']),
             'MASTER_TOKEN' => (isset($config['MASTER_TOKEN']) ? $config['MASTER_TOKEN'] : ($current['MASTER_TOKEN'] ?? '')),
+            'PRICELIST_MODE' => (isset($config['PRICELIST_MODE']) ? $config['PRICELIST_MODE'] : ($current['PRICELIST_MODE'] ?? 'auto')),
+            'CURRENCY_LOCATION_MAP' => (isset($config['CURRENCY_LOCATION_MAP']) ? $config['CURRENCY_LOCATION_MAP'] : ($current['CURRENCY_LOCATION_MAP'] ?? '')),
+            'SEARCH_URL' => (isset($config['SEARCH_URL']) ? $config['SEARCH_URL'] : ($current['SEARCH_URL'] ?? '')),
+            'TRIGGER_CLICKED' => (isset($config['TRIGGER_CLICKED']) ? $config['TRIGGER_CLICKED'] : ($current['TRIGGER_CLICKED'] ?? '')),
+            'TRIGGER_TYPING' => (isset($config['TRIGGER_TYPING']) ? $config['TRIGGER_TYPING'] : ($current['TRIGGER_TYPING'] ?? '')),
         );
 
         if(empty($updatedConfig['MASTER_TOKEN'])) $updatedConfig['MASTER_TOKEN'] = Tools::passwdGen(16);
@@ -335,13 +346,26 @@ class Udsearchintegrator extends Module
                         //(isset($parsedUrl['path']) ? $parsedUrl['path'] : '') .
                         //'?' . http_build_query($queryParams);
                 $token = SISession::getCSRF();
-				Media::addJsDef([
+                $js_defs = [
                     'udsi_cart_url' => $this->context->link->getPageLink('cart', true),
                     'udsi_options' => array(
                         'ajax_url' => $this->context->link->getModuleLink($this->name, 'session'),
                         'token' => $token,
                     ),
-                ]);
+                    // merged into window.UdunySearch by views/js/front.js (keeps user_session intact)
+                    'udsi_search_config' => array_filter(array(
+                        'url' => $config['SEARCH_URL'] ?? '',
+                        'lang' => $this->context->language->iso_code,
+                        'trigger_elements' => array_filter(array(
+                            'clicked' => $config['TRIGGER_CLICKED'] ?? '',
+                            'typing' => $config['TRIGGER_TYPING'] ?? '',
+                        )),
+                    )),
+                ];
+                if (SIPriceContext::shouldIncludePrices(SIPriceContext::getContexts((int) $this->context->shop->id))) {
+                    $js_defs['UdunyStoreContext'] = SIPriceContext::resolveVisitorContext($this->context);
+                }
+				Media::addJsDef($js_defs);
                 $this->context->controller->registerJavascript('searchintegrator', $config['SCRIPT_SRC'] . '?lang=' . $this->context->language->iso_code, [
                     'server' => 'remote',
                     'position' => 'bottom', // or 'head'
